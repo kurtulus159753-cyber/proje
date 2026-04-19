@@ -1,17 +1,20 @@
 "use client";
-// Video: public/urunler/Avatar_video.mp4 — oynatılmadan önce ilk video karesi; ürün görseli yalnızca video hata verirse.
+// Video: public/urunler/Avatar_video.mp4 — ilk oynatmaya kadar public/urunler/fs.png tam çerçeve poster.
 
 import Image from "next/image";
 import { Play } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const VIDEO_SRC = "/urunler/Avatar_video.mp4";
+const INTRO_POSTER_SRC = "/urunler/fs.png";
 const PRODUCT_IMAGE_SRC = "/ürünler/ürün-10-sabun.jpeg";
 
 export function VideoShoppingBlock() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoFailed, setVideoFailed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  /** İlk kez oynatılmadan önce fs.png poster gösterilir */
+  const [hasUserStarted, setHasUserStarted] = useState(false);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -30,7 +33,6 @@ export function VideoShoppingBlock() {
     setVideoFailed(true);
   }, []);
 
-  /** Oynatmadan önce videonun ilk karesinin görünmesi (poster yerine gerçek video karesi) */
   const onVideoLoadedData = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -46,6 +48,7 @@ export function VideoShoppingBlock() {
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) {
+      setHasUserStarted(true);
       v.muted = false;
       void v.play().catch(() => {
         v.muted = true;
@@ -65,6 +68,8 @@ export function VideoShoppingBlock() {
     },
     [togglePlayback],
   );
+
+  const showIntroPoster = !videoFailed && !hasUserStarted;
 
   return (
     <div className="relative aspect-video w-full min-h-[260px] overflow-hidden rounded-4xl border border-sand/50 bg-[#0e0d0c] shadow-lift sm:min-h-[300px] lg:min-h-[340px]">
@@ -92,7 +97,9 @@ export function VideoShoppingBlock() {
       {!videoFailed && (
         <video
           ref={videoRef}
-          className="absolute inset-0 z-[1] h-full w-full bg-[#0e0d0c] object-contain object-center"
+          className={`absolute inset-0 z-[1] h-full w-full bg-[#0e0d0c] object-contain object-center transition-opacity duration-300 ${
+            hasUserStarted ? "opacity-100" : "opacity-0"
+          }`}
           muted={false}
           loop
           playsInline
@@ -105,8 +112,21 @@ export function VideoShoppingBlock() {
         </video>
       )}
 
+      {showIntroPoster && (
+        <div className="absolute inset-0 z-[2]">
+          <Image
+            src={INTRO_POSTER_SRC}
+            alt="Video önizleme"
+            fill
+            sizes="(max-width: 1024px) 100vw, 960px"
+            className="object-cover object-center"
+            priority
+          />
+        </div>
+      )}
+
       <div
-        className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-t from-ink/35 via-transparent to-transparent"
+        className="pointer-events-none absolute inset-0 z-[3] bg-gradient-to-t from-ink/35 via-transparent to-transparent"
         aria-hidden
       />
 
