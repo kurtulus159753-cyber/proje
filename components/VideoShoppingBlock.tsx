@@ -1,11 +1,12 @@
 "use client";
-// Video: public/urunler/Avatar_video.mp4 — ilk oynatmaya kadar public/urunler/fs.png tam çerçeve poster.
+// Video: public/Avatar_Video.mp4 (köke koyun; Linux/Vercel büyük-küçük harfe duyarlı). Önizleme: /urunler/fs.png
 
 import Image from "next/image";
 import { Play } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const VIDEO_SRC = "/urunler/Avatar_video.mp4";
+/** Vercel (Linux): dosya adı birebir Avatar_Video.mp4 olmalı — public/Avatar_Video.mp4 */
+const VIDEO_SRC = "/Avatar_Video.mp4";
 const INTRO_POSTER_SRC = "/urunler/fs.png";
 const PRODUCT_IMAGE_SRC = "/ürünler/ürün-10-sabun.jpeg";
 
@@ -15,6 +16,8 @@ export function VideoShoppingBlock() {
   const [isPlaying, setIsPlaying] = useState(false);
   /** İlk kez oynatılmadan önce fs.png poster gösterilir */
   const [hasUserStarted, setHasUserStarted] = useState(false);
+  /** iOS / otomatik oynatma politikaları: başlangıçta sessiz; ilk tıklamada ses açılır */
+  const [muted, setMuted] = useState(true);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -49,8 +52,10 @@ export function VideoShoppingBlock() {
     if (!v) return;
     if (v.paused) {
       setHasUserStarted(true);
+      setMuted(false);
       v.muted = false;
       void v.play().catch(() => {
+        setMuted(true);
         v.muted = true;
         void v.play().catch(() => {});
       });
@@ -77,8 +82,8 @@ export function VideoShoppingBlock() {
         {videoFailed ? (
           <>
             <Image
-              src={PRODUCT_IMAGE_SRC}
-              alt=""
+              src={INTRO_POSTER_SRC}
+              alt="Video yüklenemedi — önizleme görseli"
               fill
               sizes="(max-width: 1024px) 100vw, 640px"
               className="object-cover object-center"
@@ -97,19 +102,19 @@ export function VideoShoppingBlock() {
       {!videoFailed && (
         <video
           ref={videoRef}
-          className={`absolute inset-0 z-[1] h-full w-full bg-[#0e0d0c] object-contain object-center transition-opacity duration-300 ${
+          src={VIDEO_SRC}
+          className={`absolute inset-0 z-[1] h-full w-full bg-transparent object-contain object-center transition-opacity duration-300 ${
             hasUserStarted ? "opacity-100" : "opacity-0"
           }`}
-          muted={false}
-          loop
+          autoPlay={false}
           playsInline
+          muted={muted}
+          loop
           preload="auto"
           aria-label="Ürün tanıtım videosu — oynatmak veya durdurmak için alana tıklayın"
           onError={onVideoError}
           onLoadedData={onVideoLoadedData}
-        >
-          <source src={VIDEO_SRC} type="video/mp4" />
-        </video>
+        />
       )}
 
       {showIntroPoster && (
