@@ -58,7 +58,7 @@ export function FeaturedVideoGrid() {
           Çok Satanlar &amp; hikâye
         </h2>
         <p className="mt-2 text-sm text-stone sm:text-base">
-          Video shopping: vitrin videosu ve videodaki ürünü aynı anda keşfedin.
+          Öne çıkan görsel vitrin alanı.
         </p>
       </div>
 
